@@ -5,7 +5,10 @@ module.exports = {
   entry: './src/index.ts',
   resolve: { extensions: ['.ts', '.tsx', '.js'] },
   module: {
-    rules: [{ test: /\.tsx?$/, use: 'ts-loader', exclude: /node_modules/ }],
+    rules: [
+      { test: /\.tsx?$/, use: 'ts-loader', exclude: /node_modules/ },
+      { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+    ],
   },
   plugins: [
     new ModuleFederationPlugin({
