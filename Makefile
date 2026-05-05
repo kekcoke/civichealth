@@ -119,7 +119,7 @@ dev-clinical:
 	cd apps/ha-clinical && npx ng serve --port=4202
 
 dev-bff:
-	cd apps/ha-bff && bundle exec ruby app.rb -p 4300
+	cd apps/ha-bff && PORT=4300 bundle exec ruby app.rb
 
 storybook:
 	cd libs/shared-ui && npm run storybook

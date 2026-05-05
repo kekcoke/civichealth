@@ -55,3 +55,5 @@ module HaBff
     end
   end
 end
+
+HaBff::App.run! if __FILE__ == $0
