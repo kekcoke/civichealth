@@ -64,8 +64,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `clinical-dashboard.component.ts` — Added `<ha-offline-banner>` sticky header; full Carbon-style nav shell (patients / appointments / encounters / prescriptions)
 - `package.json` — Added `@angular/service-worker@^17.0.0`, `idb-keyval@^6.2.1`
 
-### Planned (remaining)
-- Storybook documentation for `libs/shared-ui` atomic components
+#### `libs/shared-ui` — Storybook 8 Documentation
+- `.storybook/main.ts` — Storybook 8 config with `@storybook/react-vite` framework; addons: essentials, a11y, interactions; autodocs enabled; telemetry disabled
+- `.storybook/preview.ts` — Global preview: design-tokens.css import, 3 background presets (canvas/white/dark), controls matchers, padded layout
+- `package.json` — Storybook 8 devDependencies: `storybook`, `@storybook/react-vite`, `@storybook/addon-essentials/a11y/interactions`, `@storybook/test`, `@vitejs/plugin-react`, `idb-keyval`; `storybook` + `build-storybook` scripts
+- `Button.stories.tsx` — 8 stories: Primary, Secondary, Tertiary, Ghost, Danger, Disabled, WithIcon, AllVariants; full argTypes for variant/children/disabled; `fn()` click action
+- `StatusTag.stories.tsx` — 7 stories: one per status variant, AllStatuses row, AutoResolved (14 real portal value samples demonstrating `resolveStatus()`)
+- `AlertCard.stories.tsx` — 6 stories: Info/Success/Warning/Error/NoAction/AllSeverities; decorator constrains max width; real portal copy in story args
+- `DataTable.stories.tsx` — 6 stories: InvoicesTable, PermitQueue, AppointmentsTable, EmptyState, NoRowAction, WithCustomRenderer; 3 real-world column/data sets drawn from portal wireframes
 
 ---
 
