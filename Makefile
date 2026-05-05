@@ -109,13 +109,13 @@ db-down:
 
 # ── Individual service dev servers ─────────────────────────────────────────
 dev-shell:
-	npx nx serve portal-shell --port=4200
+	cd apps/portal-shell && npx ng serve --port=4200
 
 dev-lgu:
-	cd apps/lgu-civic && npx webpack serve --mode development
+	cd apps/lgu-civic && npx webpack serve --mode development --port=4201
 
 dev-clinical:
-	npx nx serve ha-clinical --port=4202
+	cd apps/ha-clinical && npx ng serve --port=4202
 
 dev-bff:
 	cd apps/ha-bff && bundle exec ruby app.rb -p 4300

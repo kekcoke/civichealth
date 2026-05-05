@@ -2,8 +2,8 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConsentSettingsComponent } from './consent-settings.component';
 
-// Import the Custom Element so it registers before the template renders
-import '../../../../../ha-clinical/src/app/health-status/health-status.element';
+// Custom Element registration handled via Module Federation remote
+// import '../../../ha-clinical/src/app/health-status/health-status.element';
 
 /**
  * DashboardComponent — Citizen's unified home screen.
