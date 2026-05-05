@@ -12,14 +12,46 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `.NET 10` REST API controllers for all Civic endpoints (Citizens, Invoices, Payments, Permits, ServiceRequests, Properties)
 - Ruby GraphQL schema, types, queries, and mutations for the HA BFF
 - CI/CD pipeline updates for Public Cloud deployment with Nx "affected" builds
-## [Unreleased] — Phase 3: Secure Health Integration
-> Branch: `feat/phase-3-health-integration`
+## [Unreleased] — Phase 4: Ecosystem Expansion
+> Branch: `feat/phase-4-ecosystem`
 
 ### Planned
-- Establish Hybrid Networking (VPN/ExpressRoute bridging & cross-boundary CORS)
-- Deploy `ha-clinical` Angular remote to Private Cloud server via DMZ
-- Develop HA Secure Proxy Agent (Ruby GraphQL BFF) PHI enforcement layer
-- Implement "Partial Integration" adapter (Health Status Web Component inside LGU portal)
+- Open Shared UI Kit library to third-party municipal developers
+- Implement Offline-first capabilities (PWA) for field clinicians
+
+---
+
+## [Phase 3] — 2026-05-05 · Secure Health Integration
+> Branch: `feat/phase-3-health-integration` · Merged to `main`: `db586e8`
+
+### Added — Hybrid Networking (`infra/networking/`)
+- `cors-policy.md` — CORS rules for Public → Private Cloud boundary, Nginx DMZ reverse-proxy config (IP allowlist, TLS, proxy headers), VPN/ExpressRoute topology ASCII diagram, security constraints (JWT, role enforcement, no direct DB access)
+
+### Added — HA BFF PHI Enforcement (`apps/ha-bff/`)
+- `middleware/phi_sanitizer.rb` — Rack middleware (defence-in-depth): strips PHI fields (`clinical_notes_encrypted`, `diagnosis_codes`, `prescriptions`, `encounters`, etc.) from GraphQL response bodies for any caller lacking `ha_clinician` role; HIPAA / RA 10173 compliant
+- `lib/audit_logger.rb` — Compliance audit logger for clinical data access; mirrors SQL Server `audit_clinical_access` trigger; structured JSON output shippable to SIEM / Azure Monitor
+- `app.rb` — Wired `PhiSanitizer` middleware via `use Middleware::PhiSanitizer` and added requires for audit logger
+
+### Added — ha-clinical Angular Remote (`apps/ha-clinical/` · Angular 17 + Module Federation)
+
+#### Application Scaffold
+- `package.json` — Angular 17, Apollo Angular 6, GraphQL 16, Module Federation deps
+- `webpack.config.js` — Module Federation config: exposes `./ClinicalModule` and `./HealthStatusElement` to Portal Shell host; singleton shared deps
+
+#### ClinicalModule (`src/app/clinical/`)
+- `clinical.module.ts` — NgModule with child routes: `/patients/:id`, `/appointments`, `/encounters`, `/prescriptions`
+- `clinical-dashboard.component.ts` — Dashboard shell: `listAppointments` + `searchProviders` GraphQL queries
+- `patient-record/patient-record.component.ts` — Full EMR view: `getPatientRecord` query with nested appointments, prescriptions, encounters
+- `appointments/appointments.component.ts` — `scheduleAppointment` + `cancelAppointment` mutations
+- `encounters/encounters.component.ts` — `listEncounters` + `createEncounter`
+- `prescriptions/prescriptions.component.ts` — `getActivePrescriptions` query
+
+#### Partial Integration Adapter
+- `health-status/health-status.element.ts` — Framework-agnostic Custom Element `<health-status-widget>`: embedded in LGU React portal; accepts `federated-identity` + `jwt` attributes; renders appointment count + next appointment date only — zero PHI exposed to citizens; self-contained with scoped CSS
+
+#### Environments
+- `src/environments/environment.ts` — Dev: `localhost:9292` BFF, `localhost:8080` Keycloak
+- `src/environments/environment.prod.ts` — Prod: `ha-proxy.internal` BFF, `sso.civic.gov` Keycloak
 
 ---
 
