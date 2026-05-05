@@ -17,6 +17,19 @@
 
 const HA_BFF_URL = (window as any).__HA_BFF_URL__ || "https://ha-proxy.internal/api/ha/v1/graphql";
 
+/**
+ * Step 1 — resolve OIDC federated identity UUID → internal HA patient record.
+ * Requires BFF to expose: patientByFederatedIdentity(federatedIdentity: ID!): Patient
+ */
+const RESOLVE_PATIENT_QUERY = `
+  query ResolvePatient($federatedIdentity: ID!) {
+    patientByFederatedIdentity(federatedIdentity: $federatedIdentity) {
+      id
+    }
+  }
+`;
+
+/** Step 2 — fetch appointments using the resolved internal patient ID. */
 const HEALTH_STATUS_QUERY = `
   query ListAppointments($patientId: ID!) {
     listAppointments(patient_id: $patientId) {
@@ -52,15 +65,35 @@ class HealthStatusElement extends HTMLElement {
     }
 
     try {
+      const headers = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${jwt}`,
+      };
+
+      // Step 1 — resolve federated identity → internal patient ID (Gap 3 fix)
+      const resolveRes = await fetch(HA_BFF_URL, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          query: RESOLVE_PATIENT_QUERY,
+          variables: { federatedIdentity },
+        }),
+      });
+      const resolveJson = await resolveRes.json();
+      const internalPatientId: string | undefined = resolveJson?.data?.patientByFederatedIdentity?.id;
+
+      if (!internalPatientId) {
+        this.render('<span class="ha-status-unavailable">No linked health record found.</span>');
+        return;
+      }
+
+      // Step 2 — fetch appointments using resolved internal ID
       const res = await fetch(HA_BFF_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${jwt}`,
-        },
+        headers,
         body: JSON.stringify({
           query: HEALTH_STATUS_QUERY,
-          variables: { patientId: federatedIdentity },
+          variables: { patientId: internalPatientId },
         }),
       });
 

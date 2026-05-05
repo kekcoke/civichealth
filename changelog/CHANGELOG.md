@@ -13,11 +13,39 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Ruby GraphQL schema, types, queries, and mutations for the HA BFF
 - CI/CD pipeline updates for Public Cloud deployment with Nx "affected" builds
 ## [Unreleased] — Phase 4: Ecosystem Expansion
-> Branch: `feat/phase-4-ecosystem`
+> Branch: `feat/phase-4-ecosystem-expansion`
 
-### Planned
-- Open Shared UI Kit library to third-party municipal developers
-- Implement Offline-first capabilities (PWA) for field clinicians
+### Added
+
+#### `apps/lgu-civic` — React Admin Remote (Module Federation)
+- `webpack.config.js` — `ModuleFederationPlugin` remote config; exposes 4 modules on port 4201
+- `src/index.ts` + `src/bootstrap.tsx` — Deferred bootstrap pattern for MF singleton safety
+- `src/App.tsx` — Shell with Carbon-style left nav, `useAuthGuard` role gate, lazy-loaded routes
+- `src/hooks/useAuthGuard.ts` — JWT role resolver reading `kc_token` from `sessionStorage`; checks `realm_access.roles` for `civic_employee` / `super_admin`
+- `src/store/` — Redux Toolkit slices: `citizenSlice`, `permitSlice`, `serviceRequestSlice`, `financeSlice`
+- `src/modules/CitizenDirectory/` — Paginated citizen table with search, status badges, page controls
+- `src/modules/PermitQueue/` — Tabbed filter by status; inline Approve/Reject actions
+- `src/modules/ServiceRequestDispatch/` — Category filter pills, Leaflet map placeholder (Gap 7 noted), inline assign workflow
+- `src/modules/FinanceBatches/` — Summary tiles (count/records/amount), batch table with Post action
+
+#### `apps/ha-clinical` — Angular Clinical MFE (Gap fixes)
+- `patient-search/patient-search.component.ts` — Debounced full-text patient search with reactive form; routes to patient record on select (Gap 1)
+- `clinical.module.ts` — Registered `PatientSearchComponent` + `ReactiveFormsModule`; added `/patients` default route (Gap 1)
+- `encounters/encounters.component.ts` — Extended `CreateEncounter` mutation with 8 vitals fields: HR, systolic/diastolic BP, temperature, SpO₂, respiratory rate, weight, height (Gap 2)
+
+#### `apps/ha-bff` — Ruby GraphQL BFF (Gap fixes)
+- `graphql/types/query_type.rb` — Added `patientByFederatedIdentity` resolver (identity bridge for widget) and `searchPatients` full-text query with `ha_clinician` guard (Gaps 1 & 3)
+- `graphql/types/encounter_type.rb` — Exposed 8 vitals fields on `EncounterType` (Gap 2)
+- `db/migrate/20260505016_add_vitals_to_encounters.rb` — Migration 016: adds HR, BP (systolic/diastolic), temperature, SpO₂, respiratory rate, weight, height to `encounters` table with partial index (Gap 2)
+
+#### `apps/ha-clinical` — health-status-widget (Gap 3 fix)
+- `health-status.element.ts` — Two-step identity resolution: `patientByFederatedIdentity` query resolves OIDC UUID → internal patient ID before fetching appointments; graceful "No linked health record" state
+
+### Planned (remaining)
+- PWA Service Worker + offline cache + sync queue for `ha-clinical` field clinicians
+- Leaflet + PostGIS map integration for `ServiceRequestDispatch` (Gap 7)
+- Citizen `ConsentSettingsComponent` on portal-shell Dashboard (Gap 5)
+- Storybook documentation for `libs/shared-ui` atomic components
 
 ---
 

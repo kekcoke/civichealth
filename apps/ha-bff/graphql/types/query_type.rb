@@ -22,6 +22,32 @@ module Types
       patient
     end
 
+    # ── Identity Resolution (Gap 3 fix) ─────────────────────────────────────
+    field :patient_by_federated_identity, Types::PatientType, null: true do
+      description "Resolve OIDC federated identity UUID → internal HA patient record. Used by health-status-widget."
+      argument :federated_identity, ID, required: true
+    end
+
+    def patient_by_federated_identity(federated_identity:)
+      # Returns only id — widget never receives PHI via this path
+      Patient.select(:id).find_by(federated_identity: federated_identity)
+    end
+
+    field :search_patients, [Types::PatientType], null: false do
+      description "Full-text patient search by name, DOB, or phone (ha_clinician role required)"
+      argument :query, String, required: true
+    end
+
+    def search_patients(query:)
+      raise GraphQL::ExecutionError, "ha_clinician role required" unless context[:roles].include?("ha_clinician")
+
+      term = "%#{Patient.sanitize_sql_like(query)}%"
+      Patient.where(
+        "CONCAT(first_name, ' ', last_name) ILIKE :q OR contact_phone ILIKE :q OR CAST(date_of_birth AS TEXT) LIKE :q",
+        q: term
+      ).limit(50).order(:last_name, :first_name)
+    end
+
     # ── Scheduling & Providers ───────────────────────────────────────────────
     field :list_appointments, [Types::AppointmentType], null: false do
       description "Fetch upcoming appointments for a patient"

@@ -1,0 +1,113 @@
+/**
+ * CivicHealth Shared Design Tokens
+ * Source: DESIGN.MD — Carbon Design System / IBM
+ * Single source of truth for all frontend apps.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+
+:root {
+  /* ── Colors ─────────────────────────────────────────────────────────── */
+  --color-primary:          #0f62fe;
+  --color-on-primary:       #ffffff;
+  --color-ink:              #161616;
+  --color-ink-muted:        #525252;
+  --color-ink-subtle:       #8c8c8c;
+  --color-canvas:           #ffffff;
+  --color-surface-1:        #f4f4f4;
+  --color-surface-2:        #e0e0e0;
+  --color-inverse-canvas:   #161616;
+  --color-inverse-surface-1:#262626;
+  --color-inverse-ink:      #ffffff;
+  --color-inverse-ink-muted:#c6c6c6;
+  --color-hairline:         #e0e0e0;
+  --color-hairline-strong:  #161616;
+  --color-blue-60:          #0043ce;
+  --color-blue-80:          #002d9c;
+  --color-blue-hover:       #0050e6;
+  --color-success:          #24a148;
+  --color-warning:          #f1c21b;
+  --color-error:            #da1e28;
+  --color-info:             #0f62fe;
+
+  /* ── Typography ─────────────────────────────────────────────────────── */
+  --font-family:            'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+
+  --text-display-xl-size:   76px;
+  --text-display-xl-weight: 300;
+  --text-display-xl-lh:     1.17;
+  --text-display-xl-ls:     -0.5px;
+
+  --text-display-lg-size:   60px;
+  --text-display-lg-weight: 300;
+  --text-display-lg-lh:     1.17;
+  --text-display-lg-ls:     -0.4px;
+
+  --text-display-md-size:   42px;
+  --text-display-md-weight: 300;
+  --text-display-md-lh:     1.20;
+  --text-display-md-ls:     0;
+
+  --text-headline-size:     32px;
+  --text-headline-weight:   400;
+  --text-headline-lh:       1.25;
+  --text-headline-ls:       0;
+
+  --text-card-title-size:   24px;
+  --text-card-title-weight: 400;
+  --text-card-title-lh:     1.33;
+  --text-card-title-ls:     0;
+
+  --text-subhead-size:      20px;
+  --text-subhead-weight:    400;
+  --text-subhead-lh:        1.40;
+
+  --text-body-lg-size:      18px;
+  --text-body-lg-weight:    400;
+  --text-body-lg-lh:        1.50;
+
+  --text-body-size:         16px;
+  --text-body-weight:       400;
+  --text-body-lh:           1.50;
+  --text-body-ls:           0.16px;
+
+  --text-body-sm-size:      14px;
+  --text-body-sm-weight:    400;
+  --text-body-sm-lh:        1.29;
+  --text-body-sm-ls:        0.16px;
+
+  --text-body-em-size:      14px;
+  --text-body-em-weight:    600;
+  --text-body-em-lh:        1.29;
+  --text-body-em-ls:        0.16px;
+
+  --text-caption-size:      12px;
+  --text-caption-weight:    400;
+  --text-caption-lh:        1.33;
+  --text-caption-ls:        0.32px;
+
+  --text-button-size:       14px;
+  --text-button-weight:     400;
+  --text-button-lh:         1.29;
+  --text-button-ls:         0.16px;
+
+  /* ── Spacing (4px base grid) ─────────────────────────────────────────── */
+  --space-xxs:   4px;
+  --space-xs:    8px;
+  --space-sm:    12px;
+  --space-md:    16px;
+  --space-lg:    24px;
+  --space-xl:    32px;
+  --space-xxl:   48px;
+  --space-section: 96px;
+
+  /* ── Border radius — flat by default ─────────────────────────────────── */
+  --radius-none: 0px;
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+
+  /* ── Component sizing ─────────────────────────────────────────────────── */
+  --nav-height:       48px;
+  --utility-bar-height: 32px;
+  --max-width:        1584px;
+}
