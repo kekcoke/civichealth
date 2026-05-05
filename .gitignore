@@ -14,3 +14,6 @@ apps/ha-bff/node_modules/
 apps/ha-frontend/node_modules/
 
 node_modules/
+
+# angular
+.angular/
