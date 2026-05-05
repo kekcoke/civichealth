@@ -3,6 +3,7 @@
 require "sinatra/base"
 require "sinatra/json"
 require "graphql"
+require "jwt"
 require_relative "config/initializers/database"
 require_relative "graphql/schema"
 require_relative "middleware/phi_sanitizer"
