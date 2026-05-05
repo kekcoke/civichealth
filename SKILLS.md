@@ -9,7 +9,7 @@ To successfully develop, deploy, and maintain this hybrid platform, the engineer
 
 ## Frontend Frameworks
 *   **Angular (v15+):** Advanced routing, RxJS state management, and strict TypeScript interfaces (for the Shell and HA remotes).
-*   **React/Vue:** Component lifecycle and state management (for the LGU remotes).
+*   **React:** Component lifecycle and state management (for the LGU remotes).
 *   **Web Components:** Building framework-agnostic custom elements for partial cross-domain integration.
 
 ## Backend Frameworks

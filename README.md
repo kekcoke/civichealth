@@ -15,6 +15,7 @@ Before implementing features or modifying the system, AI agents and developers m
 *   **[PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md)**: Phased feature rollout plan over the next 12 months.
 *   **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)**: Known architectural pitfalls, CORS mitigation, and Micro-Frontend state synchronization fixes.
 *   **[DESIGN.MD](./DESIGN.md)**: Styling for micro frontends.
+*   **[WIREFRAMES](./WIREFRAMES)**: Directory containing ASCII wireframes.
 
 ---
 
