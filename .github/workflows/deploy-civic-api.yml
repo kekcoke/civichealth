@@ -1,0 +1,38 @@
+name: Deploy Civic API (.NET 10 to App Service)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apps/civic-api/**'
+      - 'libs/civic-models/**'
+
+jobs:
+  build_test_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore apps/civic-api/CivicApi.csproj
+
+      - name: Build and Test
+        run: |
+          dotnet build apps/civic-api/CivicApi.csproj --no-restore
+          dotnet test apps/civic-api/CivicApi.csproj --no-build --verbosity normal
+
+      - name: Publish Artifact
+        run: dotnet publish apps/civic-api/CivicApi.csproj -c Release -o ./publish
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'api-civic-health-prod'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish
