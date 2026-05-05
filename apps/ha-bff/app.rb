@@ -5,9 +5,13 @@ require "sinatra/json"
 require "graphql"
 require_relative "config/initializers/database"
 require_relative "graphql/schema"
+require_relative "middleware/phi_sanitizer"
+require_relative "lib/audit_logger"
 
 module HaBff
   class App < Sinatra::Base
+    # Defence-in-depth: strip PHI from responses for non-ha_clinician callers
+    use Middleware::PhiSanitizer
     # ── CORS ────────────────────────────────────────────────────────────────
     before do
       response.headers["Access-Control-Allow-Origin"]  = ENV.fetch("ALLOWED_ORIGIN", "*")
