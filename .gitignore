@@ -8,3 +8,9 @@ apps/civic-api/**/obj/
 # Ruby bundler
 apps/ha-bff/.bundle/
 apps/ha-bff/vendor/bundle/
+
+# Node modules
+apps/ha-bff/node_modules/
+apps/ha-frontend/node_modules/
+
+node_modules/
