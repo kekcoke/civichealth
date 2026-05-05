@@ -1,0 +1,28 @@
+default: &default
+  adapter: sqlserver
+  encoding: utf8
+  host: <%= ENV.fetch("HA_DB_HOST", "localhost") %>
+  port: <%= ENV.fetch("HA_DB_PORT", 1433) %>
+  database: <%= ENV.fetch("HA_DB_NAME", "ha_clinical") %>
+  username: <%= ENV.fetch("HA_DB_USER", "sa") %>
+  password: <%= ENV.fetch("HA_DB_PASSWORD", "") %>
+  # Connection pool — tuned for clinical BFF workload
+  pool: <%= ENV.fetch("HA_DB_POOL", 10) %>
+  timeout: 5000
+  # Azure SQL / Always Encrypted compatible
+  azure: false
+
+development:
+  <<: *default
+  database: ha_clinical_development
+
+test:
+  <<: *default
+  database: ha_clinical_test
+
+production:
+  <<: *default
+  host: <%= ENV.fetch("HA_DB_HOST") %>
+  database: <%= ENV.fetch("HA_DB_NAME") %>
+  username: <%= ENV.fetch("HA_DB_USER") %>
+  password: <%= ENV.fetch("HA_DB_PASSWORD") %>

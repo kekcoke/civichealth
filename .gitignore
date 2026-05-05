@@ -1,2 +1,10 @@
 .DS_Store
 notes/*
+.env
+# .NET build artifacts
+apps/civic-api/**/bin/
+apps/civic-api/**/obj/
+
+# Ruby bundler
+apps/ha-bff/.bundle/
+apps/ha-bff/vendor/bundle/

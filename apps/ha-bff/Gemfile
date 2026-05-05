@@ -1,0 +1,35 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+ruby "~> 3.2"
+
+# Core framework
+gem "sinatra", "~> 4.0"
+gem "sinatra-contrib", "~> 4.0"
+
+# GraphQL
+gem "graphql", "~> 2.3"
+
+# ActiveRecord ORM + SQL Server adapter
+gem "activerecord", "~> 7.2"
+gem "tiny_tds", "~> 2.1"          # Low-level FreeTDS SQL Server driver
+gem "activerecord-sqlserver-adapter", "~> 7.2"
+
+# Database migrations CLI
+gem "standalone_migrations", "~> 7.0"
+
+# Authentication / JWT verification
+gem "jwt", "~> 2.9"
+
+# Utilities
+gem "dotenv", "~> 3.1"
+gem "rack-cors", "~> 2.0"
+gem "puma", "~> 6.4"
+
+group :development, :test do
+  gem "rspec", "~> 3.13"
+  gem "factory_bot", "~> 6.4"
+  gem "faker", "~> 3.3"
+  gem "rubocop", "~> 1.65", require: false
+end
