@@ -53,8 +53,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `modules/ServiceRequestDispatch/index.tsx` — Replaced static placeholder with full `react-leaflet` `MapContainer`; colored `divIcon` markers per status; `MapFly` helper pans map on row/pin selection; status legend row; bi-directional selection (pin click ↔ list row highlight); `stopPropagation` on assign input to prevent accidental row deselect
 - `package.json` — Added `leaflet@^1.9.4`, `react-leaflet@^4.2.1`, `@types/leaflet@^1.9.12`
 
+#### `apps/ha-clinical` — PWA: Offline-First for Field Clinicians
+- `src/ngsw-config.json` — Angular Service Worker config; prefetches app shell (HTML/CSS/JS), lazy-caches assets, freshness-strategy data groups for HA BFF appointments and patients (12h / 6h TTL)
+- `src/manifest.webmanifest` — PWA installability metadata: `standalone` display, IBM Blue theme color, 3 icon sizes (72/192/512px maskable)
+- `src/app/pwa/offline.service.ts` — `OfflineService`: `navigator.onLine` + window `online/offline` events → `BehaviorSubject<boolean>`; synchronous `isOnline()` snapshot + `isOnline$` observable
+- `src/app/pwa/sync-queue.service.ts` — `SyncQueueService`: IndexedDB-backed (`idb-keyval`) FIFO mutation queue; auto-flushes on reconnect; JWT expiry guard; up to 5 retries per entry before drop; `enqueue()` / `flushNow()` / `queueSize()` public API
+- `src/app/pwa/offline-banner.component.ts` — `OfflineBannerComponent`: sticky status bar (offline=red / syncing=amber / synced=green); queue count display; "Sync Now" manual trigger; standalone Angular component
+- `src/app/pwa/pwa.module.ts` — `PwaModule`: registers `ngsw-worker.js` with 3s delayed strategy (prod only); exports `OfflineBannerComponent`; provides `OfflineService` + `SyncQueueService`
+- `clinical.module.ts` — Imported `PwaModule`
+- `clinical-dashboard.component.ts` — Added `<ha-offline-banner>` sticky header; full Carbon-style nav shell (patients / appointments / encounters / prescriptions)
+- `package.json` — Added `@angular/service-worker@^17.0.0`, `idb-keyval@^6.2.1`
+
 ### Planned (remaining)
-- PWA Service Worker + offline cache + sync queue for `ha-clinical` field clinicians
 - Storybook documentation for `libs/shared-ui` atomic components
 
 ---

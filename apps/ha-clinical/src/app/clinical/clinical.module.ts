@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { ApolloModule } from 'apollo-angular';
 import { ReactiveFormsModule } from '@angular/forms';
+import { PwaModule } from '../pwa/pwa.module';
 import { ClinicalDashboardComponent } from './clinical-dashboard.component';
 import { PatientRecordComponent } from './patient-record/patient-record.component';
 import { PatientSearchComponent } from './patient-search/patient-search.component';
@@ -38,6 +39,7 @@ const routes: Routes = [
     CommonModule,
     ReactiveFormsModule,
     ApolloModule,
+    PwaModule,
     RouterModule.forChild(routes),
   ],
 })
