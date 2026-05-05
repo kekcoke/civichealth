@@ -79,16 +79,18 @@ install: install-node install-ruby install-dotnet
 
 install-node:
 	@echo "→ Installing Node dependencies..."
-	npm ci
-	cd libs/shared-ui && npm ci
+	cd apps/portal-shell && npm ci || npm install
+	cd apps/lgu-civic && npm ci || npm install
+	cd apps/ha-clinical && npm ci || npm install
+	cd libs/shared-ui && npm ci || npm install
 
 install-ruby:
 	@echo "→ Installing Ruby dependencies (ha-bff)..."
-	cd apps/ha-bff && bundle install
+	bash -c 'source ~/.rvm/scripts/rvm && rvm use 3.2.11 && cd apps/ha-bff && bundle install'
 
 install-dotnet:
 	@echo "→ Restoring .NET packages (civic-api)..."
-	dotnet restore apps/civic-api/CivicApi.csproj
+	dotnet restore apps/civic-api/CivicApi/CivicApi.csproj
 
 # ── Database (Docker) ──────────────────────────────────────────────────────
 db-up:
