@@ -9,32 +9,128 @@ on:
       - 'libs/shared-ui/**'
       - 'package.json'
 
+env:
+  NODE_VERSION: '20'
+
 jobs:
-  build_and_deploy:
+  # ── Build ────────────────────────────────────────────────────────────────
+  build:
+    name: Build Frontend Apps
     runs-on: ubuntu-latest
+    outputs:
+      portal-shell-changed: ${{ steps.filter.outputs.portal-shell }}
+      lgu-civic-changed: ${{ steps.filter.outputs.lgu-civic }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Required by Nx to compare against previous commits
+          fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            portal-shell:
+              - 'apps/portal-shell/**'
+              - 'libs/shared-ui/**'
+            lgu-civic:
+              - 'apps/lgu-civic/**'
+              - 'libs/shared-ui/**'
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install Dependencies
         run: npm ci
 
-      - name: Build Affected Frontend Applications
-        run: npx nx affected:build --target=portal-shell,lgu-civic --configuration=production --base=HEAD~1 --head=HEAD
+      # Phase 4: install shared-ui deps for storybook & lgu-civic Leaflet/leaflet-react
+      - name: Install shared-ui Dependencies
+        run: cd libs/shared-ui && npm ci
+
+      # Install lgu-civic deps (Leaflet, react-leaflet added in Phase 4 Gap 7)
+      - name: Install lgu-civic Dependencies
+        run: cd apps/lgu-civic && npm ci
+
+      - name: Build portal-shell (Angular Shell + PWA manifest)
+        if: steps.filter.outputs['portal-shell'] == 'true'
+        run: npx nx build portal-shell --configuration=production
+
+      - name: Build lgu-civic (React MFE Remote)
+        if: steps.filter.outputs['lgu-civic'] == 'true'
+        run: cd apps/lgu-civic && npx webpack --mode production
+
+      - name: Build Storybook (shared-ui documentation)
+        run: cd libs/shared-ui && npm run build-storybook
+
+      - name: Upload portal-shell artifact
+        if: steps.filter.outputs['portal-shell'] == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-shell-dist
+          path: dist/apps/portal-shell
+          retention-days: 1
+
+      - name: Upload lgu-civic artifact
+        if: steps.filter.outputs['lgu-civic'] == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lgu-civic-dist
+          path: apps/lgu-civic/dist
+          retention-days: 1
+
+      - name: Upload Storybook artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook-dist
+          path: libs/shared-ui/storybook-static
+          retention-days: 7
+
+  # ── Deploy portal-shell ──────────────────────────────────────────────────
+  deploy-portal-shell:
+    name: Deploy portal-shell → Azure SWA
+    needs: build
+    if: needs.build.outputs.portal-shell-changed == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download portal-shell artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: portal-shell-dist
+          path: dist/portal-shell
 
       - name: Deploy Portal Shell to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_SWA_PORTAL_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: "upload"
-          app_location: "dist/apps/portal-shell"
-          skip_app_build: true # App is already built by Nx
+          action: upload
+          app_location: dist/portal-shell
+          skip_app_build: true
+
+  # ── Deploy lgu-civic ─────────────────────────────────────────────────────
+  deploy-lgu-civic:
+    name: Deploy lgu-civic → Azure SWA
+    needs: build
+    if: needs.build.outputs.lgu-civic-changed == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download lgu-civic artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lgu-civic-dist
+          path: dist/lgu-civic
+
+      - name: Deploy lgu-civic Remote to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_SWA_LGU_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: dist/lgu-civic
+          skip_app_build: true

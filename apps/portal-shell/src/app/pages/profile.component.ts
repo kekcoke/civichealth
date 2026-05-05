@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChButtonComponent } from '../../../../libs/shared-ui/src/components/angular/ch-button.component';
+import { ChButtonComponent } from '../components/ch-button.component';
 
 /**
  * ProfileComponent — Profile & Settings with EMR Consent Directives.

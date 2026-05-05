@@ -2,15 +2,15 @@ const { withModuleFederationPlugin, shareAll } = require("@angular-architects/mo
 
 /**
  * portal-shell — Angular Host Shell (Module Federation HOST).
- * Addresses Gap 8: Host config defining remote entry points.
- * Loads lgu-civic (Public Cloud CDN) and ha-clinical (Private Cloud DMZ) on demand.
+ * Loads lgu-civic (port 4201) and ha-clinical (port 4202) on demand.
+ * For production, replace localhost URLs with CDN/DMZ endpoints.
  */
 module.exports = withModuleFederationPlugin({
   remotes: {
-    // LGU Civic React remote — served from Public Cloud CDN
-    lguCivic:    "lguCivic@https://cdn.civic.gov/lgu-civic/remoteEntry.js",
-    // HA Clinical Angular remote — served from Private Cloud via DMZ
-    haClinical:  "haClinical@https://ha-proxy.internal/ha-clinical/remoteEntry.js",
+    // LGU Civic React remote — localhost for dev, CDN for prod
+    lguCivic:    "lguCivic@http://localhost:4201/remoteEntry.js",
+    // HA Clinical Angular remote — localhost for dev, DMZ for prod
+    haClinical:  "haClinical@http://localhost:4202/remoteEntry.js",
   },
   shared: {
     ...shareAll({ singleton: true, strictVersion: true, requiredVersion: "auto" }),

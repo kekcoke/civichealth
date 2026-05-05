@@ -1,25 +1,58 @@
-name: Deploy Health Authority (Ruby BFF to AKS)
+name: Deploy Health Authority (Ruby BFF + Angular Clinical to AKS)
 
 on:
   push:
     branches: [ main ]
     paths:
       - 'apps/ha-clinical/**'
-      - 'apps/ruby-bff/**'
+      - 'apps/ha-bff/**'
+
+env:
+  NODE_VERSION: '20'
+  RUBY_VERSION: '3.2'
 
 jobs:
-  build_container_deploy:
+  # ── Test ─────────────────────────────────────────────────────────────────
+  test:
+    name: Test ha-bff (RSpec)
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby ${{ env.RUBY_VERSION }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+          working-directory: apps/ha-bff
+
+      - name: Run RSpec
+        run: cd apps/ha-bff && bundle exec rspec --format progress
+
+  # ── Build + Migrate + Deploy ─────────────────────────────────────────────
+  build_container_deploy:
+    name: Build, Migrate & Deploy to AKS
+    runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Build Angular Clinical MFE
-        run: |
-          npm ci
-          npx nx build ha-clinical --configuration=production
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      # Phase 4: Build Angular Clinical MFE with PWA service worker (ngsw)
+      - name: Build Angular Clinical MFE (with PWA ngsw-worker)
+        run: npx nx build ha-clinical --configuration=production
 
       - name: Log into Azure Container Registry (ACR)
         uses: azure/docker-login@v1
@@ -28,11 +61,15 @@ jobs:
           username: ${{ secrets.HA_ACR_USERNAME }}
           password: ${{ secrets.HA_ACR_PASSWORD }}
 
-      - name: Build and Push Ruby BFF Image
+      # Phase 2+: ha-bff (was apps/ruby-bff — path corrected to apps/ha-bff)
+      - name: Build and Push HA BFF Docker Image
         run: |
-          # Build context includes the compiled Angular MFE to serve static assets via the BFF
-          docker build -t ${{ secrets.HA_ACR_LOGIN_SERVER }}/ruby-bff:${{ github.sha }} -f apps/ruby-bff/Dockerfile .
-          docker push ${{ secrets.HA_ACR_LOGIN_SERVER }}/ruby-bff:${{ github.sha }}
+          docker build \
+            -t ${{ secrets.HA_ACR_LOGIN_SERVER }}/ha-bff:${{ github.sha }} \
+            -t ${{ secrets.HA_ACR_LOGIN_SERVER }}/ha-bff:latest \
+            -f apps/ha-bff/Dockerfile .
+          docker push ${{ secrets.HA_ACR_LOGIN_SERVER }}/ha-bff:${{ github.sha }}
+          docker push ${{ secrets.HA_ACR_LOGIN_SERVER }}/ha-bff:latest
 
       - name: Set Azure Kubernetes Service (AKS) Context
         uses: azure/aks-set-context@v3
@@ -41,13 +78,28 @@ jobs:
           resource-group: 'health-authority-rg'
           cluster-name: 'ha-clinical-aks'
 
+      # Phase 1-4: Run ActiveRecord migrations (016 migrations as of Phase 4)
+      # Runs in the ha-secure-zone namespace as a Kubernetes Job before rolling deployment
+      - name: Run ActiveRecord Database Migrations
+        run: |
+          kubectl run ha-bff-migrate \
+            --image=${{ secrets.HA_ACR_LOGIN_SERVER }}/ha-bff:${{ github.sha }} \
+            --namespace=ha-secure-zone \
+            --restart=Never \
+            --env="DATABASE_URL=${{ secrets.HA_DATABASE_URL }}" \
+            --env="RAILS_ENV=production" \
+            --command -- bundle exec rake db:migrate
+          kubectl wait --for=condition=complete job/ha-bff-migrate \
+            --namespace=ha-secure-zone --timeout=120s
+          kubectl delete pod ha-bff-migrate --namespace=ha-secure-zone
+
       - name: Deploy to AKS
         uses: azure/k8s-deploy@v4
         with:
           namespace: 'ha-secure-zone'
           manifests: |
-            k8s/ruby-bff-deployment.yaml
-            k8s/ruby-bff-service.yaml
-            k8s/ruby-bff-ingress.yaml
+            k8s/ha-bff-deployment.yaml
+            k8s/ha-bff-service.yaml
+            k8s/ha-bff-ingress.yaml
           images: |
-            ${{ secrets.HA_ACR_LOGIN_SERVER }}/ruby-bff:${{ github.sha }}
+            ${{ secrets.HA_ACR_LOGIN_SERVER }}/ha-bff:${{ github.sha }}
