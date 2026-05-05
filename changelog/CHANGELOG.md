@@ -5,6 +5,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased] — Phase 2: Civic Enablement
+> Branch: `feat/phase-2-civic-api`
+
+### Planned
+- `.NET 10` REST API controllers for all Civic endpoints (Citizens, Invoices, Payments, Permits, ServiceRequests, Properties)
+- Ruby GraphQL schema, types, queries, and mutations for the HA BFF
+- CI/CD pipeline updates for Public Cloud deployment with Nx "affected" builds
 ## [Unreleased] — Phase 3: Secure Health Integration
 > Branch: `feat/phase-3-health-integration`
 
