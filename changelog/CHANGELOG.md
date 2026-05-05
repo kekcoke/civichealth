@@ -12,6 +12,64 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `.NET 10` REST API controllers for all Civic endpoints (Citizens, Invoices, Payments, Permits, ServiceRequests, Properties)
 - Ruby GraphQL schema, types, queries, and mutations for the HA BFF
 - CI/CD pipeline updates for Public Cloud deployment with Nx "affected" builds
+## [Unreleased] — Phase 3: Secure Health Integration
+> Branch: `feat/phase-3-health-integration`
+
+### Planned
+- Establish Hybrid Networking (VPN/ExpressRoute bridging & cross-boundary CORS)
+- Deploy `ha-clinical` Angular remote to Private Cloud server via DMZ
+- Develop HA Secure Proxy Agent (Ruby GraphQL BFF) PHI enforcement layer
+- Implement "Partial Integration" adapter (Health Status Web Component inside LGU portal)
+
+---
+
+## [Phase 2] — 2026-05-05 · Civic Enablement
+> Branch: `feat/phase-2-civic-enablement` · Merged to `main`: `f8cc74f`
+
+### Added — Civic API REST Controllers (`apps/civic-api/CivicApi/Controllers/` · .NET 10)
+
+| Controller | Endpoints |
+| :--- | :--- |
+| `CitizensController` | `GET /citizens/{id}`, `POST /citizens`, `PUT /citizens/{id}`, `GET/POST /citizens/{id}/bank-accounts` |
+| `InvoicesController` | `GET /invoices?status=`, `POST /invoices`, `PUT /invoices/{id}` |
+| `PaymentsController` | `GET /payments`, `POST /payments` (double-billing guard + invoice auto-update), `POST /payments/{id}/refund` |
+| `PermitsController` | `GET /permits` (filterable by citizenId & status), `POST /permits` |
+| `ServiceRequestsController` | `GET /service-requests`, `POST /service-requests`, `PUT` (appends `ServiceRequestLog` audit entry), `DELETE` (soft-close) |
+| `PropertiesController` | `GET /properties/{id}`, `GET /assessments` (filterable by propertyId & year) |
+| `NotificationsController` | `GET /notifications` (filterable by citizenId) |
+| `InsurancePoliciesController` | `GET /insurance-policies` (active only, filterable by citizenId) |
+
+### Added — HA BFF GraphQL Schema (`apps/ha-bff/` · Ruby)
+
+#### ActiveRecord Models (8 files)
+- `Patient` — validations, federated identity uniqueness, full association graph
+- `Provider` — license uniqueness, specialty associations
+- `Appointment` — status enum validation, patient/provider/facility associations
+- `Encounter` — links to MedicalRecord, has_many diagnostics/prescriptions/claims
+- `MedicalRecord` — record_type enum validation
+- `Prescription` — status enum, optional encounter association
+- `Claim` — unique encounter+provider constraint enforced at model level
+- `ConsentDirective` — directive_type enum validation
+
+#### GraphQL Types (6 files)
+- `PatientType` — includes nested `appointments`, `prescriptions`, `encounters`
+- `ProviderType`, `AppointmentType` (with nested `provider`), `EncounterType`, `PrescriptionType`, `ClaimType`
+
+#### GraphQL QueryType (7 queries)
+- `getPatientRecord` — PHI sanitization: strips clinical data if caller lacks `ha_clinician` role
+- `listAppointments`, `searchProviders` — scheduling queries
+- `listEncounters`, `getLabResults`, `getActivePrescriptions` — clinical queries
+- `getClinicalBalances`, `checkClaimStatus` — billing & insurance queries
+
+#### GraphQL Mutations (8 mutations)
+- `OnboardPatient`, `UpdatePatient`, `UpdateConsent` — patient management (clinician-only)
+- `ScheduleAppointment`, `CancelAppointment` — scheduling
+- `CreateEncounter`, `CreateLabOrder` — clinical logging (clinician-only)
+- `SubmitClaim` — insurance claim submission
+
+#### Application Bootstrap
+- `graphql/schema.rb` — `HaBff::Schema` with `GraphQL::Dataloader`, `max_depth 10`, PHI error guard
+- `app.rb` — Sinatra app: CORS headers, JWT RS256 verification middleware, `/api/ha/v1/graphql` POST endpoint, `/health` check
 
 ---
 
