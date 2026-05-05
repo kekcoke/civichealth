@@ -41,10 +41,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### `apps/ha-clinical` — health-status-widget (Gap 3 fix)
 - `health-status.element.ts` — Two-step identity resolution: `patientByFederatedIdentity` query resolves OIDC UUID → internal patient ID before fetching appointments; graceful "No linked health record" state
 
+#### `apps/portal-shell` — Citizen Dashboard + Consent Settings (Gap 5)
+- `pages/dashboard.component.ts` — Unified citizen home: quick-link grid, `<health-status-widget>` Custom Element embed, `<app-consent-settings>` side-by-side panel; reads `kc_token` + `kc_identity` from `sessionStorage`
+- `pages/consent-settings.component.ts` — Standalone Angular component; loads existing directives on mount via `getPatientRecord` query; saves 3 directives (SHARE_ALL_CLINICS, RESTRICT_TO_PCP, RESEARCH_OPT_IN) via `updateConsentDirectives` mutation; inline success/error banners with 4s auto-dismiss
+
+#### `apps/ha-bff` — Citizen Consent Mutation (Gap 5)
+- `graphql/mutations/update_consent_directives.rb` — Citizen-accessible bulk consent update; validates `jwt_sub == federated_identity` (own-record guard); permits only 3 citizen directive types; transactional upsert with rollback on error
+- `graphql/types/mutation_type.rb` — Registered `update_consent_directives` field
+
+#### `apps/lgu-civic` — Leaflet Map in 311 Dispatch (Gap 7)
+- `modules/ServiceRequestDispatch/index.tsx` — Replaced static placeholder with full `react-leaflet` `MapContainer`; colored `divIcon` markers per status; `MapFly` helper pans map on row/pin selection; status legend row; bi-directional selection (pin click ↔ list row highlight); `stopPropagation` on assign input to prevent accidental row deselect
+- `package.json` — Added `leaflet@^1.9.4`, `react-leaflet@^4.2.1`, `@types/leaflet@^1.9.12`
+
 ### Planned (remaining)
 - PWA Service Worker + offline cache + sync queue for `ha-clinical` field clinicians
-- Leaflet + PostGIS map integration for `ServiceRequestDispatch` (Gap 7)
-- Citizen `ConsentSettingsComponent` on portal-shell Dashboard (Gap 5)
 - Storybook documentation for `libs/shared-ui` atomic components
 
 ---
