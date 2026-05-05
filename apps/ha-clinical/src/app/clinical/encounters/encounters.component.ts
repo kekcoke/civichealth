@@ -18,16 +18,33 @@ const LIST_ENCOUNTERS = gql`
 const CREATE_ENCOUNTER = gql`
   mutation CreateEncounter(
     $patientId: ID!, $providerId: ID!,
-    $encounterDate: String!, $encounterType: String, $chiefComplaint: String
+    $encounterDate: String!, $encounterType: String, $chiefComplaint: String,
+    # Vitals — all optional (Gap 2 fix: migration 016 added these columns)
+    $heartRateBpm: Float, $systolicBpMmhg: Float, $diastolicBpMmhg: Float,
+    $temperatureCelsius: Float, $spo2Percent: Float,
+    $respiratoryRateRpm: Float, $weightKg: Float, $heightCm: Float
   ) {
     createEncounter(
       patient_id: $patientId,
       provider_id: $providerId,
       encounter_date: $encounterDate,
       encounter_type: $encounterType,
-      chief_complaint: $chiefComplaint
+      chief_complaint: $chiefComplaint,
+      heart_rate_bpm: $heartRateBpm,
+      systolic_bp_mmhg: $systolicBpMmhg,
+      diastolic_bp_mmhg: $diastolicBpMmhg,
+      temperature_celsius: $temperatureCelsius,
+      spo2_percent: $spo2Percent,
+      respiratory_rate_rpm: $respiratoryRateRpm,
+      weight_kg: $weightKg,
+      height_cm: $heightCm
     ) {
-      encounter { id encounterDate status }
+      encounter {
+        id encounterDate status
+        heartRateBpm systolicBpMmhg diastolicBpMmhg
+        temperatureCelsius spo2Percent respiratoryRateRpm
+        weightKg heightCm
+      }
       errors
     }
   }
