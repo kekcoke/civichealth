@@ -1,0 +1,53 @@
+name: Deploy Health Authority (Ruby BFF to AKS)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apps/ha-clinical/**'
+      - 'apps/ruby-bff/**'
+
+jobs:
+  build_container_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build Angular Clinical MFE
+        run: |
+          npm ci
+          npx nx build ha-clinical --configuration=production
+
+      - name: Log into Azure Container Registry (ACR)
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.HA_ACR_LOGIN_SERVER }}
+          username: ${{ secrets.HA_ACR_USERNAME }}
+          password: ${{ secrets.HA_ACR_PASSWORD }}
+
+      - name: Build and Push Ruby BFF Image
+        run: |
+          # Build context includes the compiled Angular MFE to serve static assets via the BFF
+          docker build -t ${{ secrets.HA_ACR_LOGIN_SERVER }}/ruby-bff:${{ github.sha }} -f apps/ruby-bff/Dockerfile .
+          docker push ${{ secrets.HA_ACR_LOGIN_SERVER }}/ruby-bff:${{ github.sha }}
+
+      - name: Set Azure Kubernetes Service (AKS) Context
+        uses: azure/aks-set-context@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          resource-group: 'health-authority-rg'
+          cluster-name: 'ha-clinical-aks'
+
+      - name: Deploy to AKS
+        uses: azure/k8s-deploy@v4
+        with:
+          namespace: 'ha-secure-zone'
+          manifests: |
+            k8s/ruby-bff-deployment.yaml
+            k8s/ruby-bff-service.yaml
+            k8s/ruby-bff-ingress.yaml
+          images: |
+            ${{ secrets.HA_ACR_LOGIN_SERVER }}/ruby-bff:${{ github.sha }}
