@@ -9,8 +9,16 @@ To successfully develop, deploy, and maintain this hybrid platform, the engineer
 
 ## Frontend Frameworks
 *   **Angular (v15+):** Advanced routing, RxJS state management, and strict TypeScript interfaces (for the Shell and HA remotes).
-*   **React/Vue:** Component lifecycle and state management (for the LGU remotes).
+*   **React:** Component lifecycle and state management (for the LGU remotes).
 *   **Web Components:** Building framework-agnostic custom elements for partial cross-domain integration.
+
+## Backend Frameworks
+*   **.NET 10:** Building scalable cloud-native public APIs, handling civic data, billing, and public permits.
+*   **Ruby:** Developing secure Backend-for-Frontend (BFF) proxies, implementing strict data sanitization, and handling clinical EMR access in private clouds.
+
+## Database & Data Architecture
+*   **PostgreSQL:** High-concurrency optimization, PostGIS for geospatial data, table partitioning, and advanced concurrency controls for public civic databases.
+*   **SQL Server:** Deep clinical history management, Columnstore indexes for analytics, Temporal Tables for strict auditing, and 'Always Encrypted' security for Protected Health Information (PHI).
 
 ## Cloud & DevOps
 *   **Hybrid Networking:** CORS configuration across public/private boundaries, VPN/ExpressRoute mechanics, and Reverse Proxy setups.
