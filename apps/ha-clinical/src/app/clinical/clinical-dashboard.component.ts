@@ -53,7 +53,7 @@ const SEARCH_PROVIDERS = gql`
       </div>
     </div>
   `,
-  styles: [\`
+  styles: [`
     .clinical-dashboard { display: flex; flex-direction: column; height: 100vh; font-family: 'IBM Plex Sans', sans-serif; }
     .clinical-shell { display: flex; flex: 1; overflow: hidden; }
     .clinical-nav {
@@ -68,7 +68,7 @@ const SEARCH_PROVIDERS = gql`
     .clinical-nav a.active { color: #fff; background: #0f62fe; border-left-color: #fff; }
     .clinical-nav a:hover:not(.active) { background: #262626; color: #f4f4f4; }
     .clinical-main { flex: 1; overflow: auto; background: #f4f4f4; }
-  \`],
+  `],
 })
 export class ClinicalDashboardComponent implements OnInit {
   constructor(private apollo: Apollo) {}
