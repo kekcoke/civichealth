@@ -1,4 +1,4 @@
-name: Deploy Civic API (.NET 10 to App Service)
+name: Deploy Civic API (.NET 10 to Azure App Service)
 
 on:
   push:
@@ -7,28 +7,69 @@ on:
       - 'apps/civic-api/**'
       - 'libs/civic-models/**'
 
+env:
+  DOTNET_VERSION: '10.0.x'
+
 jobs:
-  build_test_deploy:
+  # ── Test ─────────────────────────────────────────────────────────────────
+  test:
+    name: Build & Test Civic API
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup .NET 10
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore Dependencies
         run: dotnet restore apps/civic-api/CivicApi.csproj
 
-      - name: Build and Test
+      - name: Build
+        run: dotnet build apps/civic-api/CivicApi.csproj --no-restore --configuration Release
+
+      - name: Run Tests
+        run: dotnet test apps/civic-api/CivicApi.csproj --no-build --configuration Release --verbosity normal
+
+  # ── Migrate + Deploy ──────────────────────────────────────────────────────
+  migrate_and_deploy:
+    name: Migrate & Deploy to App Service
+    runs-on: ubuntu-latest
+    needs: test
+    environment: production
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore Dependencies
+        run: dotnet restore apps/civic-api/CivicApi.csproj
+
+      # Phase 1: EF Core migrations for PostgreSQL (Civic DB)
+      # Runs before deployment to ensure schema is current before new code goes live
+      - name: Install EF Core Tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Run EF Core Database Migrations
         run: |
-          dotnet build apps/civic-api/CivicApi.csproj --no-restore
-          dotnet test apps/civic-api/CivicApi.csproj --no-build --verbosity normal
+          cd apps/civic-api
+          dotnet ef database update \
+            --connection "${{ secrets.CIVIC_DB_CONNECTION_STRING }}"
+        env:
+          ASPNETCORE_ENVIRONMENT: Production
 
       - name: Publish Artifact
-        run: dotnet publish apps/civic-api/CivicApi.csproj -c Release -o ./publish
+        run: |
+          dotnet publish apps/civic-api/CivicApi.csproj \
+            --configuration Release \
+            --no-restore \
+            --output ./publish
 
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3

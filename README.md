@@ -28,10 +28,126 @@ To ensure compliance with strict data privacy laws (HIPAA/GDPR/PIPEDA), the syst
 - `apps/portal-shell`: The host Angular application (Public Cloud).
 - `apps/lgu-civic`: React remote application for government services (Public Cloud).
 - `apps/ha-clinical`: Angular remote application for health services (Private Cloud).
-- `libs/shared-ui`: Agnostic Tailwind CSS design tokens and base components.
+- `apps/civic-api`: .NET 10 REST API for LGU civic services (Public Cloud).
+- `apps/ha-bff`: Ruby GraphQL Backend-for-Frontend proxy in HA DMZ (Private Cloud).
+- `libs/shared-ui`: Carbon/IBM design tokens and atomic components (Angular + React).
 - `libs/shared-auth`: OIDC/Keycloak integration and state management.
 
+---
+
 ## Quick Start
-1. Install dependencies: `npm install`
-2. Run the shell and all remotes: `nx run-many --target=serve --all`
-3. Navigate to `http://localhost:4200`
+
+### Prerequisites
+| Tool | Version | Purpose |
+|---|---|---|
+| Node.js | 20+ | Angular, React, Nx |
+| .NET SDK | 10.0+ | civic-api |
+| Ruby | 3.2+ | ha-bff |
+| Docker | latest | SQL Server (ha-bff local DB) |
+| tmux | any | Parallel dev sessions (`make dev`) |
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/kekcoke/civichealth.git
+cd civichealth
+make install          # installs Node + Ruby + .NET dependencies
+```
+
+### 2. Start the database (ha-bff requires SQL Server)
+```bash
+make db-up            # starts SQL Server 2022 in Docker on :1433
+make migrate          # runs EF Core + ActiveRecord migrations
+```
+
+### 3. Run all services (full stack)
+```bash
+make dev              # opens tmux with 5 panes — requires tmux
+```
+
+Or start services individually:
+```bash
+make dev-shell        # Angular portal-shell    → http://localhost:4200
+make dev-lgu          # React lgu-civic          → http://localhost:4201
+make dev-clinical     # Angular ha-clinical      → http://localhost:4202
+make dev-bff          # Ruby ha-bff              → http://localhost:4300
+                      # .NET civic-api           → http://localhost:5000
+```
+
+Or start by domain:
+```bash
+make dev-civic        # portal-shell + lgu-civic + civic-api
+make dev-health       # ha-clinical + ha-bff
+```
+
+### 4. Storybook (shared-ui component library)
+```bash
+make storybook        # → http://localhost:6006
+```
+
+---
+
+## Common Commands
+
+| Command | Description |
+|---|---|
+| `make install` | Install all dependencies |
+| `make dev` | Start full stack (tmux) |
+| `make dev-civic` | Start civic services only |
+| `make dev-health` | Start health services only |
+| `make migrate` | Run all pending DB migrations |
+| `make migrate-status` | Check migration status for both DBs |
+| `make test` | Run all tests (frontend + backend) |
+| `make lint` | Lint all code |
+| `make build` | Production build (all apps) |
+| `make clean` | Remove build artifacts |
+| `make storybook` | Start Storybook on :6006 |
+
+> Run `make help` for the full command reference.
+
+---
+
+## Debugging Quick Reference
+
+### Service won't start
+```bash
+# Check ports in use
+lsof -i :4200   # portal-shell
+lsof -i :4201   # lgu-civic
+lsof -i :4202   # ha-clinical
+lsof -i :4300   # ha-bff
+lsof -i :1433   # SQL Server
+
+# Kill a port
+kill -9 $(lsof -ti :4200)
+```
+
+### Module Federation errors
+```bash
+# Clear Nx cache and rebuild
+npx nx reset && make build-civic
+```
+
+### SQL Server connection refused
+```bash
+# Check container status
+docker ps | grep civichealth-sqlserver
+# Restart if stopped
+make db-down && make db-up && make migrate-health
+```
+
+### Angular Service Worker (PWA) stale cache in dev
+```bash
+# Unregister SW in Chrome DevTools → Application → Service Workers → Unregister
+# Or force-clear via CLI:
+npx nx build ha-clinical --configuration=development  # SW disabled in dev mode
+```
+
+### JWT / Keycloak auth failures
+```bash
+# Verify kc_token is written to sessionStorage after login
+# In browser console:
+sessionStorage.getItem('kc_token')
+sessionStorage.getItem('kc_identity')
+```
+
+> See **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** for detailed issue resolution.
