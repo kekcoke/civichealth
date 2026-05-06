@@ -38,6 +38,11 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "headers": {
+              "X-Frame-Options": "ALLOWALL"
+            }
+          },
           "configurations": {
             "production": {"buildTarget": "ha-clinical:build:production"},
             "development": {"buildTarget": "ha-clinical:build:development"}
@@ -46,5 +51,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }

@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 
 const LIST_APPOINTMENTS = gql`
   query ListAppointments($patientId: ID!) {
-    listAppointments(patient_id: $patientId) {
+    list_appointments(patient_id: $patientId) {
       id
       startTime
       endTime
@@ -22,7 +22,7 @@ const LIST_APPOINTMENTS = gql`
 
 const SEARCH_PROVIDERS = gql`
   query SearchProviders($specialty: String) {
-    searchProviders(specialty: $specialty) {
+    search_providers(specialty: $specialty) {
       id
       firstName
       lastName
@@ -53,7 +53,7 @@ const SEARCH_PROVIDERS = gql`
       </div>
     </div>
   `,
-  styles: [\`
+  styles: [`
     .clinical-dashboard { display: flex; flex-direction: column; height: 100vh; font-family: 'IBM Plex Sans', sans-serif; }
     .clinical-shell { display: flex; flex: 1; overflow: hidden; }
     .clinical-nav {
@@ -68,7 +68,7 @@ const SEARCH_PROVIDERS = gql`
     .clinical-nav a.active { color: #fff; background: #0f62fe; border-left-color: #fff; }
     .clinical-nav a:hover:not(.active) { background: #262626; color: #f4f4f4; }
     .clinical-main { flex: 1; overflow: auto; background: #f4f4f4; }
-  \`],
+  `],
 })
 export class ClinicalDashboardComponent implements OnInit {
   constructor(private apollo: Apollo) {}
@@ -78,12 +78,12 @@ export class ClinicalDashboardComponent implements OnInit {
   getAppointments(patientId: string): Observable<any[]> {
     return this.apollo
       .watchQuery({ query: LIST_APPOINTMENTS, variables: { patientId } })
-      .valueChanges.pipe(map((r: any) => r.data.listAppointments));
+      .valueChanges.pipe(map((r: any) => r.data.list_appointments));
   }
 
-  searchProviders(specialty?: string): Observable<any[]> {
+  search_providers(specialty?: string): Observable<any[]> {
     return this.apollo
       .watchQuery({ query: SEARCH_PROVIDERS, variables: { specialty } })
-      .valueChanges.pipe(map((r: any) => r.data.searchProviders));
+      .valueChanges.pipe(map((r: any) => r.data.search_providers));
   }
 }

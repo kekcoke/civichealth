@@ -17,3 +17,8 @@ node_modules/
 
 # angular
 .angular/
+
+# Build output directories
+apps/*/dist/
+libs/*/dist/
+dist/

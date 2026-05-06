@@ -53,7 +53,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `modules/ServiceRequestDispatch/index.tsx` — Replaced static placeholder with full `react-leaflet` `MapContainer`; colored `divIcon` markers per status; `MapFly` helper pans map on row/pin selection; status legend row; bi-directional selection (pin click ↔ list row highlight); `stopPropagation` on assign input to prevent accidental row deselect
 - `package.json` — Added `leaflet@^1.9.4`, `react-leaflet@^4.2.1`, `@types/leaflet@^1.9.12`
 
-#### `apps/ha-clinical` — PWA: Offline-First for Field Clinicians
+### Fixed
+
+#### `apps/ha-bff` — Ruby GraphQL BFF
+- `Gemfile` — Added `jwt` gem dependency for RS256 token decoding
+- `config/database.yml` — Fixed YAML alias parsing (colon suffix in connection strings)
+- `app.rb` — Enabled server startup by fixing initialization order
+
+#### `apps/ha-clinical` — Angular Clinical MFE
+- `webpack.config.js` — Enabled Module Federation remotes for local dev
+- Fixed blank page and runtime errors in clinical dashboard
+- `clinical.component.ts` — Aligned GraphQL query names with BFF snake_case convention
+
+#### `apps/portal-shell` — Angular Shell
+- Created local `ChButtonComponent` to resolve `ng-content` projection error from npm-linked shared-ui
+- Extracted component templates to external `.html` files
+- Complete scaffolding with shared-ui dependencies
+
+#### `apps/lgu-civic` — React Admin Remote
+- Added CSS loaders to webpack devDependencies
+- `webpack.config.js` — Fixed Module Federation remote configuration
+
+#### Root-level
+- `.gitignore` — Added `node_modules/`
+- `Makefile` — Resolved install errors for Node, Ruby, and .NET targets
+
+### Added — `apps/ha-clinical` — PWA: Offline-First for Field Clinicians
 - `src/ngsw-config.json` — Angular Service Worker config; prefetches app shell (HTML/CSS/JS), lazy-caches assets, freshness-strategy data groups for HA BFF appointments and patients (12h / 6h TTL)
 - `src/manifest.webmanifest` — PWA installability metadata: `standalone` display, IBM Blue theme color, 3 icon sizes (72/192/512px maskable)
 - `src/app/pwa/offline.service.ts` — `OfflineService`: `navigator.onLine` + window `online/offline` events → `BehaviorSubject<boolean>`; synchronous `isOnline()` snapshot + `isOnline$` observable

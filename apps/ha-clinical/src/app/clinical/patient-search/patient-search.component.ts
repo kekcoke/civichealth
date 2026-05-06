@@ -7,7 +7,7 @@ import { Observable, of } from 'rxjs';
 
 const SEARCH_PATIENTS = gql`
   query SearchPatients($query: String!) {
-    searchPatients(query: $query) {
+    search_patients(query: $query) {
       id
       federatedIdentity
       firstName

@@ -13,7 +13,7 @@
 # =============================================================================
 
 .PHONY: help install install-node install-ruby install-dotnet \
-        dev dev-shell dev-lgu dev-clinical dev-bff dev-civic dev-health \
+        dev dev-hot dev-shell dev-lgu dev-clinical dev-bff dev-civic dev-health \
         storybook \
         build build-civic build-health \
         migrate migrate-civic migrate-health migrate-rollback \
@@ -38,6 +38,7 @@ help:
 	@echo ""
 	@echo "  Development (full stack)"
 	@echo "    make dev              All services in parallel (tmux required)"
+	@echo "    make dev-hot          Kill & restart all services (fresh start)"
 	@echo "    make dev-civic        portal-shell + lgu-civic + civic-api"
 	@echo "    make dev-health       ha-clinical + ha-bff"
 	@echo ""
@@ -118,7 +119,7 @@ dev-clinical:
 	cd apps/ha-clinical && npx ng serve --port=4202
 
 dev-bff:
-	cd apps/ha-bff && bundle exec ruby app.rb -p 4300
+	cd apps/ha-bff && PORT=4300 bundle exec ruby app.rb
 
 storybook:
 	cd libs/shared-ui && npm run storybook
@@ -141,6 +142,30 @@ dev:
 	@echo "    ha-clinical   → http://localhost:4202"
 	@echo "    ha-bff        → http://localhost:4300"
 	@echo "    civic-api     → http://localhost:5000"
+
+dev-hot:
+	@command -v tmux >/dev/null 2>&1 || { echo "tmux is required for 'make dev-hot'. Install with: brew install tmux"; exit 1; }
+	@echo "→ Killing existing tmux sessions..."
+	@tmux kill-session -t civichealth 2>/dev/null; true
+	@tmux kill-session -t civic      2>/dev/null; true
+	@tmux kill-session -t health     2>/dev/null; true
+	@tmux kill-session -t portal-shell 2>/dev/null; true
+	@tmux kill-session -t lgu-civic  2>/dev/null; true
+	@tmux kill-session -t ha-clinical 2>/dev/null; true
+	@tmux kill-session -t ha-bff     2>/dev/null; true
+	@tmux kill-session -t dotnet     2>/dev/null; true
+	@tmux kill-session -t civic-api  2>/dev/null; true
+	@echo "→ Starting SQL Server for ha-bff..."
+	@(docker start civichealth-sqlserver 2>/dev/null) || (docker run -d --name civichealth-sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=CivicHealth_Dev2026! -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest && echo "  SQL Server container created")
+	@echo "→ Starting fresh civichealth session..."
+	tmux new-session -d -s civichealth -n shell    'make dev-shell'
+	tmux new-window  -t civichealth -n lgu-civic  'make dev-lgu'
+	tmux new-window  -t civichealth -n ha-clinical 'make dev-clinical'
+	tmux new-window  -t civichealth -n ha-bff      'make dev-bff'
+	tmux new-window  -t civichealth -n dotnet      'cd apps/civic-api && dotnet watch run'
+	@echo ""
+	@echo "✅  Fresh session started. Attach:  tmux attach -t civichealth"
+	@echo "    Use 'make dev-hot' anytime to restart clean."
 
 dev-civic:
 	@command -v tmux >/dev/null 2>&1 || { echo "tmux required"; exit 1; }
