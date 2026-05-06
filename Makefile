@@ -155,6 +155,8 @@ dev-hot:
 	@tmux kill-session -t ha-bff     2>/dev/null; true
 	@tmux kill-session -t dotnet     2>/dev/null; true
 	@tmux kill-session -t civic-api  2>/dev/null; true
+	@echo "→ Starting SQL Server for ha-bff..."
+	@(docker start civichealth-sqlserver 2>/dev/null) || (docker run -d --name civichealth-sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=CivicHealth_Dev2026! -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest && echo "  SQL Server container created")
 	@echo "→ Starting fresh civichealth session..."
 	tmux new-session -d -s civichealth -n shell    'make dev-shell'
 	tmux new-window  -t civichealth -n lgu-civic  'make dev-lgu'
