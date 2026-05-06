@@ -31,6 +31,8 @@ gem "puma", "~> 6.4"
 
 group :development, :test do
   gem "rspec", "~> 3.13"
+  gem "webmock", "~> 3.24"
+  gem "simplecov", "~> 0.22.0"
   gem "factory_bot", "~> 6.4"
   gem "faker", "~> 3.3"
   gem "rubocop", "~> 1.65", require: false
