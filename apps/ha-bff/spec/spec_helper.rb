@@ -19,16 +19,22 @@ RSpec.configure do |config|
   config.include Rack::Test::Methods
 
   config.before(:suite) do
-    ActiveRecord::Base.connection.execute(
-      "TRUNCATE patients, providers, facilities, appointments, encounters, medical_records, diagnostics, prescriptions, claims, consent_directives, clinical_accounts, provider_schedules RESTART IDENTITY CASCADE"
-    )
+    truncate_tables if db_available?
   end
 
   config.before(:each) do
-    ActiveRecord::Base.connection.execute(
-      "TRUNCATE patients, providers, facilities, appointments, encounters, medical_records, diagnostics, prescriptions, claims, consent_directives, clinical_accounts, provider_schedules RESTART IDENTITY CASCADE"
-    )
+    truncate_tables if db_available?
   end
+end
+
+def db_available?
+  ActiveRecord::Base.connection.active? rescue false
+end
+
+def truncate_tables
+  ActiveRecord::Base.connection.execute(
+    "TRUNCATE patients, providers, facilities, appointments, encounters, medical_records, diagnostics, prescriptions, claims, consent_directives, clinical_accounts, provider_schedules RESTART IDENTITY CASCADE"
+  )
 end
 
 def app

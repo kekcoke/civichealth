@@ -2,8 +2,6 @@
 // Run with: cd apps/portal-shell && ng test --watch=false --browsers=ChromeHeadless
 
 module.exports = function (config) {
-  require('karma-chrome-launcher')(config);
-
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],

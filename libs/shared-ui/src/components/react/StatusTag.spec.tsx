@@ -1,4 +1,6 @@
-import { resolveStatus } from './StatusTag';
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { resolveStatus, StatusTag } from './StatusTag';
 
 describe('resolveStatus', () => {
   it('PAID → success', () => {
@@ -24,22 +26,17 @@ describe('resolveStatus', () => {
   });
 
   it('null input → neutral (null-safe)', () => {
-    expect(resolveStatus(null as any)).toBe('neutral');
+    expect(resolveStatus(null as unknown as string)).toBe('neutral');
   });
 
   it('undefined input → neutral', () => {
-    expect(resolveStatus(undefined as any)).toBe('neutral');
+    expect(resolveStatus(undefined as unknown as string)).toBe('neutral');
   });
 });
 
 describe('StatusTag component', () => {
   it('renders children as text', () => {
-    // Dynamically import to avoid TS noise at module level
-    const { StatusTag } = require('./StatusTag');
-    const React = require('react');
-    const { render, screen } = require('@testing-library/react');
-
-    render(React.createElement(StatusTag, { status: 'success' }, 'PAID'));
+    render(<StatusTag status="success">PAID</StatusTag>);
     expect(screen.getByText('PAID')).toBeTruthy();
   });
 });

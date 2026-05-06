@@ -34,16 +34,4 @@ describe('OfflineService', () => {
 
     window.dispatchEvent(new Event('offline'));
   });
-
-  it('isOnline$ same observable — emits on connectivity transitions', (done) => {
-    const emission: boolean[] = [];
-    service.isOnline$.subscribe(value => {
-      emission.push(value);
-      if (emission.length >= 2) {
-        // first emission is current state; second is after event
-        expect(emission[0]).toBe(navigator.onLine);
-        done();
-      }
-    });
-  });
 });

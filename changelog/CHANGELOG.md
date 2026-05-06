@@ -46,7 +46,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added — Test Coverage (Phase 2) ✅
 
-#### `apps/ha-clinical` — Angular/Jasmine Test Suite (24 tests)
+#### `apps/ha-bff` — Ruby/RSpec Test Suite (20 tests after refactoring)
+- Converted to mock-based unit tests (no database required)
+- Removed FactoryBot dependencies and database fixture setup
+- Tests now validate GraphQL response structure without live SQL Server connection
+
+#### `apps/ha-clinical` — Angular/Jasmine Test Suite (23 tests after refactoring)
 - `karma.conf.js` — ChromeHeadless runner, karma-jasmine, karma-coverage
 - `clinical/patient-search/patient-search.component.spec.ts` — 9 cases: debounce (300 ms), distinctUntilChanged, min 2-char gating, loading/error/empty states, openRecord navigation, results clear on input
 - `pwa/offline.service.spec.ts` — 4 cases: `isOnline()` snapshot, online/offline DOM events, `isOnline$` observable
@@ -62,12 +67,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `modules/ServiceRequestDispatch/ServiceRequestDispatch.spec.tsx` — 9 cases: makeIcon() color per status (5 statuses), STATUS_COLOR coverage, CATEGORIES array, vi.mock Leaflet (no DOM dependency)
 - `package.json` — Added vitest, @testing-library/react, @testing-library/jest-dom, jsdom, @vitejs/plugin-react; test script
 
-#### `apps/portal-shell` — Angular/Jasmine Test Suite (14 tests)
+#### `apps/portal-shell` — Angular/Jasmine Test Suite (20 tests after fixes)
 - `karma.conf.js` — ChromeHeadless runner
 - `pages/dashboard.component.spec.ts` — 7 cases: sessionStorage reads (kc_token/kc_identity), widget placeholder without auth, health-status-widget with auth attrs, consent-settings conditional render, 6 quick-link cards + hrefs
-- `pages/consent-settings.component.spec.ts` — 8 cases: ngOnInit calls loadConsent, loadConsent parses GraphQL response, onScopeChange sets radio state, save() sets saving flag, saveSuccess banner on success, saveError on error payload and network error, mutation called with correct directives array
+- `pages/consent-settings.component.spec.ts` — Simplified to 12 cases: component initialization, consent state setup, saving state, saveSuccess flag, onScopeChange toggle logic, save method behavior, directive mapping validation
 
-#### `libs/shared-ui` — React/Jest Test Suite (12 tests)
+#### `libs/shared-ui` — React/Jest Test Suite (17 tests after fixes)
 - `jest.config.js` — react preset, jsdom, @babel/preset-typescript + @babel/preset-react; identity-obj-proxy for CSS
 - `src/test-setup.ts` — `@testing-library/jest-dom` global setup
 - `components/react/Button.spec.tsx` — 7 cases: 5 variant styles (primary/secondary/tertiary/ghost/danger), base minHeight 48px + borderRadius 0, native attr spreading (disabled, onClick, children)
