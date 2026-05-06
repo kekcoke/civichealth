@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 
 const GET_PATIENT_RECORD = gql`
   query GetPatientRecord($federatedIdentity: ID!) {
-    getPatientRecord(federated_identity: $federatedIdentity) {
+    get_patient_record(federated_identity: $federatedIdentity) {
       id
       federatedIdentity
       firstName
@@ -78,6 +78,6 @@ export class PatientRecordComponent implements OnInit {
     const federatedIdentity = this.route.snapshot.paramMap.get('id')!;
     this.patient$ = this.apollo
       .watchQuery({ query: GET_PATIENT_RECORD, variables: { federatedIdentity } })
-      .valueChanges.pipe(map((r: any) => r.data.getPatientRecord));
+      .valueChanges.pipe(map((r: any) => r.data.get_patient_record));
   }
 }
