@@ -16,11 +16,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ---
 
 ## [Unreleased] — Phase 5: Test Infrastructure
-> Branch: `test/phase-1`
+> Branch: `test/phase-2`
 
-### Added — Test Coverage (Phase 1)
+### Added — Test Coverage (Phase 1) ✅
 
-#### `apps/civic-api` — .NET/xUnit Test Suite (35 tests)
+#### `apps/civic-api` — .NET/xUnit Test Suite (36 tests)
 - `CivicApi.Tests/CivicApi.Tests.csproj` — xUnit, Moq, FluentAssertions, Testcontainers, InMemory EF Core
 - `Controllers/CitizensControllerTests.cs` — 10 tests (CRUD + bank accounts)
 - `Controllers/PaymentsControllerTests.cs` — 8 tests (double-billing guard + refunds)
@@ -28,7 +28,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Controllers/PermitsControllerTests.cs` — 4 tests (filter + create)
 - `Controllers/InvoicesControllerTests.cs` — 5 tests (filter + CRUD)
 
-#### `apps/ha-bff` — Ruby/RSpec Test Suite (27 tests)
+#### `apps/ha-bff` — Ruby/RSpec Test Suite (34 tests)
 - `spec/spec_helper.rb` — RSpec config, JWT helpers, gql() helper
 - `spec/rails_helper.rb` — FactoryBot, WebMock, cleanup hooks
 - `spec/graphql/query_type_spec.rb` — 18 tests covering getPatientRecord, patientByFederatedIdentity, searchPatients, listAppointments, searchProviders, getActivePrescriptions
@@ -43,6 +43,36 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - `Makefile` — Updated `test-civic-api` and `test-ha-bff` targets
 - `.gitignore` — Blacklist test artifacts (*.suo, TestResults/, *.pem private keys)
+
+### Added — Test Coverage (Phase 2) ✅
+
+#### `apps/ha-clinical` — Angular/Jasmine Test Suite (24 tests)
+- `karma.conf.js` — ChromeHeadless runner, karma-jasmine, karma-coverage
+- `clinical/patient-search/patient-search.component.spec.ts` — 9 cases: debounce (300 ms), distinctUntilChanged, min 2-char gating, loading/error/empty states, openRecord navigation, results clear on input
+- `pwa/offline.service.spec.ts` — 4 cases: `isOnline()` snapshot, online/offline DOM events, `isOnline$` observable
+- `pwa/sync-queue.service.spec.ts` — 8 cases: enqueue metadata, FIFO ordering, queueSize, offline guard, HTTP success delete, retry-to-drop (MAX_RETRIES=5), stale JWT drop without HTTP call, flushNow delegation
+- `clinical/encounters/encounters.component.spec.ts` — 2 cases: Apollo watchQuery and mutate method returns
+
+#### `apps/lgu-civic` — React/Vitest Test Suite (23 tests)
+- `vitest.config.ts` — jsdom + @vitejs/plugin-react; globals enabled
+- `src/test-setup.ts` — `@testing-library/jest-dom` global setup
+- `store/citizenSlice.spec.ts` — 6 cases: fetchCitizens pending/fulfilled/rejected; selectCitizen, clearSelected, setPage reducers
+- `store/serviceRequestSlice.spec.ts` — 4 cases: fetchServiceRequests pending/fulfilled/rejected; assignRequest fulfilled updates item in state
+- `hooks/useAuthGuard.spec.tsx` — 5 cases: no token → unauthorized, valid JWT matching role, no matching role, malformed token fallback, role array dependency
+- `modules/ServiceRequestDispatch/ServiceRequestDispatch.spec.tsx` — 9 cases: makeIcon() color per status (5 statuses), STATUS_COLOR coverage, CATEGORIES array, vi.mock Leaflet (no DOM dependency)
+- `package.json` — Added vitest, @testing-library/react, @testing-library/jest-dom, jsdom, @vitejs/plugin-react; test script
+
+#### `apps/portal-shell` — Angular/Jasmine Test Suite (14 tests)
+- `karma.conf.js` — ChromeHeadless runner
+- `pages/dashboard.component.spec.ts` — 7 cases: sessionStorage reads (kc_token/kc_identity), widget placeholder without auth, health-status-widget with auth attrs, consent-settings conditional render, 6 quick-link cards + hrefs
+- `pages/consent-settings.component.spec.ts` — 8 cases: ngOnInit calls loadConsent, loadConsent parses GraphQL response, onScopeChange sets radio state, save() sets saving flag, saveSuccess banner on success, saveError on error payload and network error, mutation called with correct directives array
+
+#### `libs/shared-ui` — React/Jest Test Suite (12 tests)
+- `jest.config.js` — react preset, jsdom, @babel/preset-typescript + @babel/preset-react; identity-obj-proxy for CSS
+- `src/test-setup.ts` — `@testing-library/jest-dom` global setup
+- `components/react/Button.spec.tsx` — 7 cases: 5 variant styles (primary/secondary/tertiary/ghost/danger), base minHeight 48px + borderRadius 0, native attr spreading (disabled, onClick, children)
+- `components/react/StatusTag.spec.tsx` — 7 cases: resolveStatus() PAID→success, overdue→error (case-insensitive), PENDING→warning, OPEN→info, UNKNOWN→neutral, null/undefined→neutral; StatusTag renders children
+- `components/react/DataTable.spec.tsx` — 6 cases: empty state "No records found.", row background alternation, isStatus column renders StatusTag, col.render custom renderer, onRowAction button call, column header order matches columns array
 
 ---
 
