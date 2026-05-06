@@ -1,0 +1,130 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main, develop, 'feat/**']
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ── .NET Tests (civic-api) ──────────────────────────────────────────────
+  test-civic-api:
+    name: civic-api (xUnit)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore apps/civic-api/CivicApi.Tests/CivicApi.Tests.csproj
+
+      - name: Run tests
+        run: dotnet test apps/civic-api/CivicApi.Tests/CivicApi.Tests.csproj --verbosity normal --collect:"XPlat Code Coverage"
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: civic-api-coverage
+          path: apps/civic-api/CivicApi.Tests/**/coverage.cobertura.xml
+
+  # ── Ruby Tests (ha-bff) ─────────────────────────────────────────────────
+  test-ha-bff:
+    name: ha-bff (RSpec)
+    runs-on: ubuntu-latest
+    container:
+      image: ruby:3.2-slim
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: TestPassword123!
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'TestPassword123!' -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 30s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install -y --no-install-recommends \
+            freetds-dev libct4-dev unixodbc-dev
+          bundle install
+
+      - name: Wait for SQL Server
+        run: |
+          for i in {1..30}; do
+            sqlcmd -S localhost -U sa -P 'TestPassword123!' -Q 'SELECT 1' -b && break
+            echo "Waiting for SQL Server... ($i)"
+            sleep 2
+          done
+
+      - name: Setup test database
+        env:
+          DATABASE_URL: Server=localhost;Port=1433;Database=ha_test;User=sa;Password=TestPassword123!;TrustServerCertificate=True
+        run: bundle exec rake db:create db:migrate
+
+      - name: Run tests
+        run: bundle exec rspec --format progress --color
+        env:
+          APP_ENV: test
+          KEYCLOAK_PUBLIC_KEY: ${{ secrets.KEYCLOAK_PUBLIC_KEY }}
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: ha-bff-coverage
+          path: coverage/
+
+  # ── Frontend Tests (placeholder for Phase 2) ─────────────────────────────
+  test-frontend:
+    name: frontend (Vitest/Karma)
+    runs-on: ubuntu-latest
+    # Placeholder — Phase 2 will add nx affected --target=test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Run frontend tests
+        run: echo "Phase 1: Frontend tests pending Phase 2"
+        # TODO: npx nx run-many --target=test --all --browsers=ChromeHeadless
+
+# ── Summary ────────────────────────────────────────────────────────────────
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [test-civic-api, test-ha-bff, test-frontend]
+    if: always()
+
+    steps:
+      - name: Check results
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| civic-api | ${{ needs.test-civic-api.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ha-bff | ${{ needs.test-ha-bff.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| frontend | ${{ needs.test-frontend.result }} |" >> $GITHUB_STEP_SUMMARY

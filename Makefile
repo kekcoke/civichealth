@@ -218,10 +218,14 @@ test: test-civic-api test-ha-bff test-frontend
 	@echo "✅  All tests complete."
 
 test-civic-api:
-	dotnet test apps/civic-api/CivicApi.csproj --verbosity normal
+	@echo "→ Running civic-api unit tests..."
+	dotnet test apps/civic-api/CivicApi.Tests/CivicApi.Tests.csproj --verbosity normal
+	@echo "✅  civic-api tests complete."
 
 test-ha-bff:
+	@echo "→ Running ha-bff RSpec tests..."
 	cd apps/ha-bff && bundle exec rspec
+	@echo "✅  ha-bff tests complete."
 
 test-frontend:
 	npx nx run-many --target=test --all --browsers=ChromeHeadless

@@ -12,6 +12,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `.NET 10` REST API controllers for all Civic endpoints (Citizens, Invoices, Payments, Permits, ServiceRequests, Properties)
 - Ruby GraphQL schema, types, queries, and mutations for the HA BFF
 - CI/CD pipeline updates for Public Cloud deployment with Nx "affected" builds
+
+---
+
+## [Unreleased] — Phase 5: Test Infrastructure
+> Branch: `test/phase-1`
+
+### Added — Test Coverage (Phase 1)
+
+#### `apps/civic-api` — .NET/xUnit Test Suite (35 tests)
+- `CivicApi.Tests/CivicApi.Tests.csproj` — xUnit, Moq, FluentAssertions, Testcontainers, InMemory EF Core
+- `Controllers/CitizensControllerTests.cs` — 10 tests (CRUD + bank accounts)
+- `Controllers/PaymentsControllerTests.cs` — 8 tests (double-billing guard + refunds)
+- `Controllers/ServiceRequestsControllerTests.cs` — 9 tests (soft-delete + audit logs)
+- `Controllers/PermitsControllerTests.cs` — 4 tests (filter + create)
+- `Controllers/InvoicesControllerTests.cs` — 5 tests (filter + CRUD)
+
+#### `apps/ha-bff` — Ruby/RSpec Test Suite (27 tests)
+- `spec/spec_helper.rb` — RSpec config, JWT helpers, gql() helper
+- `spec/rails_helper.rb` — FactoryBot, WebMock, cleanup hooks
+- `spec/graphql/query_type_spec.rb` — 18 tests covering getPatientRecord, patientByFederatedIdentity, searchPatients, listAppointments, searchProviders, getActivePrescriptions
+- `spec/graphql/mutation_type_spec.rb` — 9 tests for updateConsentDirectives (own-record guard, invalid type rejection)
+- `spec/middleware/phi_sanitizer_spec.rb` — 7 tests for PHI field stripping (ha_clinician vs citizen role)
+- `spec/support/factory_bot.rb` — 6 factories (patient, provider, appointment, encounter, consent_directive, claim)
+- `spec/support/fixtures/` — RSA key pair for JWT testing
+
+#### CI/CD
+- `.github/workflows/test.yml` — GitHub Actions: civic-api (xUnit), ha-bff (RSpec), frontend (Phase 2 placeholder); SQL Server container for ha-bff; coverage artifacts
+
+### Changed
+- `Makefile` — Updated `test-civic-api` and `test-ha-bff` targets
+- `.gitignore` — Blacklist test artifacts (*.suo, TestResults/, *.pem private keys)
+
+---
+
 ## [Unreleased] — Phase 4: Ecosystem Expansion
 > Branch: `feat/phase-4-ecosystem-expansion`
 

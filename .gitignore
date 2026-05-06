@@ -22,3 +22,12 @@ node_modules/
 apps/*/dist/
 libs/*/dist/
 dist/
+
+# Test artifacts
+apps/civic-api/**/TestResults/
+*.userprefs
+*.suo
+
+# RSA test keys (commit the pub only, not pem)
+apps/ha-bff/spec/support/fixtures/*.pem
+!apps/ha-bff/spec/support/fixtures/keycloak_rsa.pub
